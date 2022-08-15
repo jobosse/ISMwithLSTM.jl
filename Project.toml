@@ -3,6 +3,9 @@ uuid = "bfe16a19-4b52-4217-86f4-8e658ef5c094"
 authors = ["Johannes Bosse <johannes.bosse@rwth-aachen.de>"]
 version = "0.1.0"
 
+[deps]
+Pandas = "eadc2687-ae89-51f9-a5d9-86b5a6373a9c"
+
 [compat]
 julia = "1.7.2"
 
