@@ -95,7 +95,7 @@ version = "0.2.2"
 
 [[deps.ISMwithLSTM]]
 deps = ["CSV"]
-path = "/Users/johannes/Uni/SoSe_22/Julia_For_Scientific_Programming/FinalProject/JuliaCode/ISMwithLSTM"
+path = ".."
 uuid = "bfe16a19-4b52-4217-86f4-8e658ef5c094"
 version = "0.1.0"
 
