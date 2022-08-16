@@ -115,7 +115,7 @@ end
 Saves the  LSTM as a '.bson' file at the given location.
 """
 function saveLSTM(LSTM,path::String)
-    last(path,5) == ".bson" && path = chop(path, tail=5)
+    last(path,5) == ".bson" && (path = chop(path, tail=5))
     @save string(path,".bson") LSTM
 end
 
@@ -125,7 +125,7 @@ end
 Returns the  LSTM saved at the given location.
 """
 function loadLSTM(path::String)
-    last(path,5) == ".bson" && path = chop(path, tail=5)
+    last(path,5) == ".bson" && (path = chop(path, tail=5))
     @load string(path,".bson") LSTM
     return LSTM
 end
