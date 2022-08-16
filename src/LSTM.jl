@@ -3,6 +3,7 @@ using Flux
 using Statistics
 using BSON: @save
 using BSON: @load
+using Logging
 
 include("ReadInputData.jl")
 include("ProximityFunctions.jl")
@@ -82,11 +83,14 @@ function trainLSTM(path_to_prox::String,
     learning_rate = 1e-3::Float64)
 
     # create the datasets
-    transient_data = regroupData([LoadAnnualData(train_period,path) for path in paths_to_data]...,periodicForcing(train_period))[1:Tr]
-    train_data = regroupData([LoadAnnualData(train_period,path) for path in paths_to_data]...,periodicForcing(train_period))[Tr+1:end]
-    test_data = regroupData([LoadAnnualData(test_period,path) for path in paths_to_data]...,periodicForcing(test_period))
-    prox_train = LoadAnnualData(train_period,path_to_prox)
-    prox_test = LoadAnnualData(test_period,path_to_prox)
+    transient_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[1:Tr]
+    train_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[Tr+1:end]
+    test_data = regroupData([LoadAnnualData(test_period,path)[:,2] for path in paths_to_data]...,periodicForcing(test_period))
+    prox_train = LoadAnnualData(train_period,path_to_prox)[:,2]
+    prox_test = LoadAnnualData(test_period,path_to_prox)[:,2]
+
+    # Create model
+    LSTM = SetUpLSTM(length(paths_to_data)+1,C_dim)
 
     # Define loss function with regularisation
     L1(θ) = sum(x -> sum(abs, x), θ)
@@ -110,12 +114,15 @@ function trainLSTM(path_to_prox::String,
         if (i_e % 30) == 0  # reduce the learning rate every 30 epochs
             opt.eta /= 2
             println("reduced learning rate to ", opt.eta)
+            println("")
         end
          
         # record losses
         push!(train_loss, loss(ΔTT_train,prox_train))
         push!(test_loss, loss(ΔTT_test,prox_test))
-        println("epoch: ", epoch, ",   train loss: ", train_loss[end], ",   test loss: ", test_loss[end])
+        println("epoch: ", epoch)
+        println("train loss: ", train_loss[end], ",   test loss: ", test_loss[end])
+        println("")
 
 
         if epoch < 10
@@ -154,4 +161,3 @@ function loadLSTM(path::String)
     @load string(path,".bson") LSTM
     return LSTM
 end
-
