@@ -55,6 +55,11 @@ git-tree-sha1 = "a598ecb0d717092b5539dbbe890c98bac842b072"
 uuid = "ab4f0b2a-ad5b-11e8-123f-65d77653426b"
 version = "0.2.0"
 
+[[deps.BSON]]
+git-tree-sha1 = "306bb5574b0c1c56d7e1207581516c557d105cad"
+uuid = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+version = "0.3.5"
+
 [[deps.BangBang]]
 deps = ["Compat", "ConstructionBase", "Future", "InitialValues", "LinearAlgebra", "Requires", "Setfield", "Tables", "ZygoteRules"]
 git-tree-sha1 = "b15a6bc52594f5e4a3b825858d1089618871bf9d"
@@ -297,8 +302,8 @@ uuid = "7869d1d1-7146-5819-86e3-90919afe41df"
 version = "0.4.6"
 
 [[deps.ISMwithLSTM]]
-deps = ["CSV", "Flux"]
-git-tree-sha1 = "cbe28655333babf4975ec0b0af468691933b1a38"
+deps = ["BSON", "CSV", "Flux", "Statistics"]
+git-tree-sha1 = "c2a614e4c79e12b094136547105e17957ca8e274"
 repo-rev = "DanielLSTM"
 repo-url = ".."
 uuid = "bfe16a19-4b52-4217-86f4-8e658ef5c094"
