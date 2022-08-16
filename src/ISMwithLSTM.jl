@@ -2,11 +2,13 @@ module ISMwithLSTM
 
 export LinearProximityFunction
 export LoadAnnualData
-include("AnalysisTools.jl")
+export SetUpLSTM
+export regroupData
+export periodicForcing
+
 include("ProximityFunctions.jl")
 include("ReadInputData.jl")
-
-
-# Write your package code here.
+include("AnalysisTools.jl")
+include("LSTM.jl")
 
 end
