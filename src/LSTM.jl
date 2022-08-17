@@ -76,7 +76,7 @@ function trainLSTM(path_to_prox::String,
     train_period::Tuple{Int64, Int64}=(1948,1980),
     test_period::Tuple{Int64, Int64}=(1981,2010);
     C_dim::Int64 = 5,
-    Tr = 366+365::Int64,
+    Tr = 365+365::Int64,
     epochs = 100::Int64,
     λ1 = 0.::Float64,
     λ2 = 0.::Float64,
@@ -86,7 +86,7 @@ function trainLSTM(path_to_prox::String,
     transient_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[1:Tr]
     train_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[Tr+1:end]
     test_data = regroupData([LoadAnnualData(test_period,path)[:,2] for path in paths_to_data]...,periodicForcing(test_period))
-    prox_train = [Vector{Float32}([data]) for data in LoadAnnualData(train_period,path_to_prox)[:,2]]
+    prox_train = [Vector{Float32}([data]) for data in LoadAnnualData(train_period,path_to_prox)[:,2]][Tr+1:end]
     prox_test = [Vector{Float32}([data]) for data in LoadAnnualData(test_period,path_to_prox)[:,2]]
 
     # Create model
@@ -109,8 +109,6 @@ function trainLSTM(path_to_prox::String,
         [LSTM(x) for x in transient_data]
 
         data = zip([train_data],[prox_train])
-        return LSTM,loss,opt
-        break
         Flux.train!(loss, Flux.params(LSTM), data, opt)
         if (epoch % 30) == 0  # reduce the learning rate every 30 epochs
             opt.eta /= 2
@@ -123,7 +121,7 @@ function trainLSTM(path_to_prox::String,
         [LSTM(x) for x in transient_data]
         push!(train_loss, loss(train_data,prox_train))
         if train_period[2]+1 != test_period[1]
-
+            
         end
         push!(test_loss, loss(test_data,prox_test))
         println("epoch: ", epoch)
@@ -132,11 +130,11 @@ function trainLSTM(path_to_prox::String,
 
 
         if epoch > 10
-            if train_loss > 1e7
+            if train_loss[end] > 1e7
                 println("train loss ist diverging")
                 break
             end
-            if std(test_loss) < 1
+            if std(test_loss[end-5:end]) < 1
                 println("early stopping du to platteu in test loss")
                 break
             end
