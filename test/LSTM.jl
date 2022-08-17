@@ -14,11 +14,11 @@ using Flux
     data = regroupData([[1, 1, 1], [9, 9, 9]]...)
     @test typeof([LSTM2(x) for x in data]) == Vector{Vector{Float32}}
 
-    #=
+    
     f(x,y) = x+y
     saveLoss(f,"testLoss.bson")
-    f2 = loadLoss("testLoss")
+    f2 = loadLoss("testLoss.bson")
     rm("testLoss.bson")
     @test f2(2,3) ≈ 5
-    =#
+    
 end
