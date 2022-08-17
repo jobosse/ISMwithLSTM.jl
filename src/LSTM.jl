@@ -99,8 +99,9 @@ function trainLSTM(path_to_prox::String,
     # Define loss function with regularisation
     L1(θ) = sum(x -> sum(abs, x), θ)
     L2(θ) = sum(x -> sum(abs2, x), θ)
-    loss(data,prox) = 1/(length(data[:,1]))*(sum([Flux.mse(LSTM(xi), yi) for (xi, yi) in zip(data,prox)]) 
+    helper_loss(data,prox, LSTM) = 1/(length(data[:,1]))*(sum([Flux.mse(LSTM(xi), yi) for (xi, yi) in zip(data,prox)]) 
         + λ1*L1(Flux.params(LSTM)) + λ2*L2(Flux.params(LSTM)))
+    loss(data,prox) = helper_loss(data,prox,LSTM) 
 
     opt= Adam(learning_rate)
 
@@ -146,7 +147,7 @@ function trainLSTM(path_to_prox::String,
             end
         end
     end
-    return LSTM, test_loss, train_loss, loss
+    return LSTM, helper_loss, train_loss, helper_loss
 end
 
 
