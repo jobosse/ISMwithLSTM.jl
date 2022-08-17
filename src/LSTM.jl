@@ -68,6 +68,7 @@ Trains a given LSTM network on training data and hyperparameters specified by th
 
 # Returns
 - Trained LSTM
+- Loss function: takes arguments (data,prox,LSTM)
 - Array of train losses (one loss value per epoch)
 - Array of test losses (one loss value per epoch)
 """
