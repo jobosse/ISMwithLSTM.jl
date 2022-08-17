@@ -1,6 +1,8 @@
 using Flux
+using CurveFit
 include("LSTM.jl")
 include("ReadInputData.jl")
+include("HelperFunctions.jl")
 
 """
     function RunLSTM(LSTM, paths_to_data::Vector{String},run_period::Tuple{Int64, Int64})
@@ -20,6 +22,21 @@ function RunLSTM(LSTM, paths_to_data::Vector{String},run_period::Tuple{Int64, In
     return result
 end
 
+"""
+    function CalculateLoss(loss, LSTM, paths_to_data::Vector{String},path_to_prox::String,run_period::Tuple{Int64,Int64})
+
+Calculates loss over the given run_period.
+
+# Arguments
+- `loss` : The loss function which is used 
+- `LSTM`
+- `paths_to_data::Vector{String}`
+- `path_to_prox::String`
+- `run_period::Tuple{Int64,Int64}`
+
+# Returns
+- loss_value::Float64
+"""
 function CalculateLoss(loss, LSTM, paths_to_data::Vector{String},path_to_prox::String,run_period::Tuple{Int64,Int64})
     # Reset LSTM and run it until start period
     Flux.reset!(LSTM)
@@ -35,3 +52,28 @@ function CalculateLoss(loss, LSTM, paths_to_data::Vector{String},path_to_prox::S
     println("Validation loss for years $(run_period[1])-$(run_period[2]): $loss_value")
     return loss_value
 end
+
+"""
+    function OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int, t_1 = 60::Int, t_2 = 70::Int)
+
+# Arguments
+- `LSTM`
+- `paths_to_data::Vector{String}`
+- `yr::Int`: year to predict the onset for
+- `t_1 = 60::Int`: corresponds to the number of days before January 1st of the prediction year
+- `t_2 = 60::Int`: correpsonds to the number of days after January 1st of the prediction year
+
+# Returns
+- `ISM Onset Day`
+"""
+function OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int, t_1 = 60::Int, t_2 = 70::Int)
+    Flux.reset!(LSTM)
+    run_period = (1948,yr)
+    data = regroupData([LoadAnnualData(run_period,path)[:,2] for path in paths_to_data]...,periodicForcing(run_period))
+    yrs = Int.(LoadAnnualData(run_period,paths_to_data[1])[:,1])
+    index_jan_1 = findallIndex(x-> x== yr,yrs)[1]
+    lstm_values = [LSTM(x)[1] for x in data][(index_jan_1-t_1):(index_jan_1+t_2)]
+    a,b = linear_fit(collect(-t_1:1:t_2),lstm_values) # f(x) = a*x + b
+    return (1-a)/b
+end
+
