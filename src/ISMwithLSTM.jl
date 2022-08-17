@@ -10,6 +10,7 @@ export saveLSTM
 export loadLSTM
 export saveFct
 export loadFct
+export trainLSTM
 
 include("ProximityFunctions.jl")
 include("ReadInputData.jl")
