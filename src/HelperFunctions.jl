@@ -18,7 +18,14 @@ function findallIndex(condition, x::AbstractVector{T} where T<:Real)
 end
 
 """
+    function FindSignSwitch(x::AbstractVector{T} where T<:Real)
+Finds the zero-crossing points in the given data. Used for the ΔTT data.
 
+#Arguments
+* `x::AbstractVector{T} where T<:Real`
+
+#Returns
+* `vector containing indices of the zero-crossing-points`
 """    
 function FindSignSwitch(x::AbstractVector{T} where T<:Real)
     x_sign = @. sign(x)
