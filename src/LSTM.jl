@@ -82,6 +82,10 @@ function trainLSTM(path_to_prox::String,
     λ2 = 0.::Float64,
     learning_rate = 1e-3::Float64)
 
+    if train_period[2] >= test_period[1]
+        error("Test period and train period either overlap or are in the wrong order")
+    end
+
     # create the datasets
     transient_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[1:Tr]
     train_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[Tr+1:end]
@@ -95,7 +99,7 @@ function trainLSTM(path_to_prox::String,
     # Define loss function with regularisation
     L1(θ) = sum(x -> sum(abs, x), θ)
     L2(θ) = sum(x -> sum(abs2, x), θ)
-    loss(data,prox) = (sum([Flux.mse(LSTM(xi), yi) for (xi, yi) in zip(data,prox)]) 
+    loss(data,prox) = 1/(length(data[:,1]))*(sum([Flux.mse(LSTM(xi), yi) for (xi, yi) in zip(data,prox)]) 
         + λ1*L1(Flux.params(LSTM)) + λ2*L2(Flux.params(LSTM)))
 
     opt= Adam(learning_rate)
@@ -121,7 +125,9 @@ function trainLSTM(path_to_prox::String,
         [LSTM(x) for x in transient_data]
         push!(train_loss, loss(train_data,prox_train))
         if train_period[2]+1 != test_period[1]
-            
+            in_between_period = (train_period[2]+1,test_period[1]-1)
+            in_between_data = regroupData([LoadAnnualData(in_between_period,path)[:,2] for path in paths_to_data]...,periodicForcing(in_between_period))
+            [LSTM(x) for x in in_between_data]
         end
         push!(test_loss, loss(test_data,prox_test))
         println("epoch: ", epoch)
@@ -134,20 +140,20 @@ function trainLSTM(path_to_prox::String,
                 println("train loss ist diverging")
                 break
             end
-            if std(test_loss[end-5:end]) < 1
+            if std(train_loss[end-5:end]) < 1e-6
                 println("early stopping du to platteu in test loss")
                 break
             end
         end
     end
-    return LSTM, test_loss, train_loss
+    return LSTM, test_loss, train_loss, loss
 end
 
 
 """
     function saveLSTM(LSTM,path::String)
 
-Saves the  LSTM as a '.bson' file at the given location.
+Saves the LSTM as a '.bson' file at the given location.
 """
 function saveLSTM(LSTM,path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
@@ -156,12 +162,35 @@ end
 
 
 """
-    function loadLSTM(LSTM,path::String)
+    function loadLSTM(path::String)
 
-Returns the  LSTM saved at the given location.
+Returns the LSTM saved at the given location.
 """
 function loadLSTM(path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
     @load string(path,".bson") LSTM
     return LSTM
+end
+
+
+"""
+    function saveLoss(loss,path::String)
+
+Saves the loss function as a '.bson' file at the given location.
+"""
+function saveLoss(loss,path::String)
+    last(path,5) == ".bson" && (path = chop(path, tail=5))
+    @save string(path,".bson") loss
+end
+
+
+"""
+    function loadLoss(path::String)
+
+Returns the Loss function saved at the given location.
+"""
+function loadLoss(path::String)
+    last(path,5) == ".bson" && (path = chop(path, tail=5))
+    @load string(path,".bson") loss
+    return loss
 end
