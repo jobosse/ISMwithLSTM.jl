@@ -5,5 +5,6 @@ using Test
     include("ProximityFunctions.jl")
     include("ReadInputData.jl")
     include("LSTM.jl")
+    include("AnalysisTools.jl")
 end
  

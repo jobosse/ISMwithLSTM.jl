@@ -4,7 +4,7 @@ include("HelperFunctions.jl")
 include("ProximityFunctions.jl")
 
 """
-function WriteSignSwitchesIndices(data, save_to_path::String)
+    function WriteSignSwitchesIndices(data, save_to_path::String)
 Writes out all zero-crossing of ΔTT in a txt file
 
 # Arguments
@@ -37,23 +37,28 @@ end
 
 
 """
-function WriteProximityData(data_path::String,save_to_path::String = ""; ProximityFunction::Function = LinearProximityFunction)
+    function WriteProximityData(data_path::String, save_to_path::String = "", output_file_name::String = "proximity.txt"; ProximityFunction::Function = LinearProximityFunction)
 
 Writes out the values of given Proximity Function for all data points into txt file. 
 The columns of the txt file correspond to: ["year","ProximityFunctionValue"]
 
 # Arguments
-* `data_path::String,``
-* `save_to_path::String = ""``
-* `file_name::String`
+* `data_path::String, path to input data`
+* `save_to_path::String = "", path to directory where the outputfile is saved.``
+* `output_file_name::String, name of the outputfile`
 # Keyword Arguments
 * `ProximityFunction::Function = LinearProximityFunction``
 
 """
-function WriteProximityData(data_path::String, save_to_path::String = "", file_name::String = "proximity.txt"; ProximityFunction::Function = LinearProximityFunction)
+function WriteProximityData(data_path::String, save_to_path::String = "", output_file_name::String = "proximity.txt"; ProximityFunction::Function = LinearProximityFunction)
     if save_to_path == ""
         save_to_path = pwd() * "/"
     end
+
+    if !(last(save_to_path) == '/')
+        save_to_path = save_to_path * "/"
+    end
+
     data = readdlm(data_path)
     # Create 'zero_crossings.txt' file which is needed for the ProximityFunction
     WriteSignSwitchesIndices(data, save_to_path)
@@ -68,15 +73,15 @@ function WriteProximityData(data_path::String, save_to_path::String = "", file_n
             output[i,2] = LinearProximityFunction(i, save_to_path)
        end
     end
-    outfile =  save_to_path * file_name
+    outfile =  save_to_path * output_file_name
     open(outfile, "w") do io
         writedlm(io, output)
     end
-    @info "$file_name was created in \"$save_to_path \". \n It holds all values of the given ProximityFunction."
+    @info "$output_file_name was created in \"$save_to_path \". \n It holds all values of the given ProximityFunction."
 end
 
 """
-function LoadAnnualData(time_period::Tuple{Real,Real}, data_path::String)
+    function LoadAnnualData(time_period::Tuple{Real,Real}, data_path::String)
 
 Returns array with column: [year, data] for the annual time period given.
 
