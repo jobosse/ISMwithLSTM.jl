@@ -146,8 +146,12 @@ end
 
 """
     function saveLSTM(LSTM,path::String)
-
+    
 Saves the  LSTM as a '.bson' file at the given location.
+
+# Arguments
+* `LSTM, returned from trainLSTM() `
+* `path::String, e.g. "parameters/my_lstm.bson"`
 """
 function saveLSTM(LSTM,path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
@@ -159,6 +163,9 @@ end
     function loadLSTM(LSTM,path::String)
 
 Returns the  LSTM saved at the given location.
+
+# Arguments
+* `path::String, e.g. "parameters/my_lstm.bson"`
 """
 function loadLSTM(path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
