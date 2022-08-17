@@ -16,9 +16,9 @@ using Flux
 
     
     f(x,y) = x+y
-    saveLoss(f,"testLoss.bson")
-    f2 = loadLoss("testLoss.bson")
-    rm("testLoss.bson")
-    @test f2(2,3) ≈ 5
+    saveFct(f,"testFct")
+    g = loadFct("testFct.bson")
+    rm("testFct.bson")
+    @test g(2,3) ≈ 5
     
 end

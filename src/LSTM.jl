@@ -181,23 +181,23 @@ end
 
 
 """
-    function saveLoss(loss,path::String)
+    function saveFct(loss,path::String)
 
 Saves the loss function as a '.bson' file at the given location.
 """
-function saveLoss(loss,path::String)
+function saveFct(fct,path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
-    @save string(path,".bson") loss
+    @save string(path,".bson") fct
 end
 
 
 """
-    function loadLoss(path::String)
+    function loadFct(path::String)
 
 Returns the Loss function saved at the given location.
 """
-function loadLoss(path::String)
+function loadFct(path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
-    @load string(path,".bson") loss
-    return loss
+    @load string(path,".bson") fct
+    return fct
 end

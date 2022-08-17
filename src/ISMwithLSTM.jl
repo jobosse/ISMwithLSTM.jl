@@ -8,8 +8,8 @@ export periodicForcing
 export RunLSTM
 export saveLSTM
 export loadLSTM
-export saveLoss
-export loadLoss
+export saveFct
+export loadFct
 
 include("ProximityFunctions.jl")
 include("ReadInputData.jl")
