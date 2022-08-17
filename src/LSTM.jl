@@ -148,7 +148,7 @@ function trainLSTM(path_to_prox::String,
             end
         end
     end
-    return LSTM, helper_loss, train_loss, helper_loss
+    return LSTM, test_loss, train_loss, helper_loss
 end
 
 

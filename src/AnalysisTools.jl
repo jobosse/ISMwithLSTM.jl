@@ -77,3 +77,4 @@ function OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int, t_1 = 
     return (1-a)/b
 end
 
+#function PlotProximity(LSTM, paths_to_data::Vector{String}, )
