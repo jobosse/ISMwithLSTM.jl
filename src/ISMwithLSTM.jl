@@ -6,7 +6,10 @@ export SetUpLSTM
 export regroupData
 export periodicForcing
 export RunLSTM
+export saveLSTM
 export loadLSTM
+export saveLoss
+export loadLoss
 
 include("ProximityFunctions.jl")
 include("ReadInputData.jl")
