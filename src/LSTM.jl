@@ -37,7 +37,7 @@ end
 
 
 # Tool to turn the data into a form suitable for the LSTM
-regroupData(data...) = [collect(x) for x in zip(data...)]
+regroupData(data...) = [Vector{Float32}(collect(x)) for x in zip(data...)]
 
 
 """
@@ -76,7 +76,7 @@ function trainLSTM(path_to_prox::String,
     train_period::Tuple{Int64, Int64}=(1948,1980),
     test_period::Tuple{Int64, Int64}=(1981,2010);
     C_dim::Int64 = 5,
-    Tr = 366+365::Int64,
+    Tr = 365+365::Int64,
     epochs = 100::Int64,
     λ1 = 0.::Float64,
     λ2 = 0.::Float64,
@@ -86,8 +86,8 @@ function trainLSTM(path_to_prox::String,
     transient_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[1:Tr]
     train_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[Tr+1:end]
     test_data = regroupData([LoadAnnualData(test_period,path)[:,2] for path in paths_to_data]...,periodicForcing(test_period))
-    prox_train = LoadAnnualData(train_period,path_to_prox)[:,2]
-    prox_test = LoadAnnualData(test_period,path_to_prox)[:,2]
+    prox_train = [Vector{Float32}([data]) for data in LoadAnnualData(train_period,path_to_prox)[:,2]][Tr+1:end]
+    prox_test = [Vector{Float32}([data]) for data in LoadAnnualData(test_period,path_to_prox)[:,2]]
 
     # Create model
     LSTM = SetUpLSTM(length(paths_to_data)+1,C_dim)
@@ -95,42 +95,46 @@ function trainLSTM(path_to_prox::String,
     # Define loss function with regularisation
     L1(θ) = sum(x -> sum(abs, x), θ)
     L2(θ) = sum(x -> sum(abs2, x), θ)
-    loss(ΔTT,prox) = (sum(Flux.mse(LSTM(xi), yi) for (xi, yi) in zip(ΔTT,prox)) 
+    loss(data,prox) = (sum([Flux.mse(LSTM(xi), yi) for (xi, yi) in zip(data,prox)]) 
         + λ1*L1(Flux.params(LSTM)) + λ2*L2(Flux.params(LSTM)))
 
     opt= Adam(learning_rate)
 
     train_loss = []
     test_loss = []
-
     println("starting training...")
     for epoch in 1:epochs     
         # Run the model for the transient period not included in the loss function
         Flux.reset!(LSTM)
-        [LSTM(x) for x in ΔTT_transient]
+        [LSTM(x) for x in transient_data]
 
-        train_data = zip(ΔTT_train,prox_train)
-        Flux.train!(loss, Flux.params(mlp), train_data, opt)
-        if (i_e % 30) == 0  # reduce the learning rate every 30 epochs
+        data = zip([train_data],[prox_train])
+        Flux.train!(loss, Flux.params(LSTM), data, opt)
+        if (epoch % 30) == 0  # reduce the learning rate every 30 epochs
             opt.eta /= 2
             println("reduced learning rate to ", opt.eta)
             println("")
         end
          
         # record losses
-        push!(train_loss, loss(ΔTT_train,prox_train))
-        push!(test_loss, loss(ΔTT_test,prox_test))
+        Flux.reset!(LSTM)
+        [LSTM(x) for x in transient_data]
+        push!(train_loss, loss(train_data,prox_train))
+        if train_period[2]+1 != test_period[1]
+            
+        end
+        push!(test_loss, loss(test_data,prox_test))
         println("epoch: ", epoch)
         println("train loss: ", train_loss[end], ",   test loss: ", test_loss[end])
         println("")
 
 
-        if epoch < 10
-            if train_loss > 1e7
+        if epoch > 10
+            if train_loss[end] > 1e7
                 println("train loss ist diverging")
                 break
             end
-            if std(test_loss) < 1
+            if std(test_loss[end-5:end]) < 1
                 println("early stopping du to platteu in test loss")
                 break
             end
@@ -142,8 +146,12 @@ end
 
 """
     function saveLSTM(LSTM,path::String)
-
+    
 Saves the  LSTM as a '.bson' file at the given location.
+
+# Arguments
+* `LSTM, returned from trainLSTM() `
+* `path::String, e.g. "parameters/my_lstm.bson"`
 """
 function saveLSTM(LSTM,path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
@@ -155,6 +163,9 @@ end
     function loadLSTM(LSTM,path::String)
 
 Returns the  LSTM saved at the given location.
+
+# Arguments
+* `path::String, e.g. "parameters/my_lstm.bson"`
 """
 function loadLSTM(path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
