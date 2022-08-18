@@ -43,12 +43,12 @@ Calculates loss over the given run_period.
 # Returns
 - loss_value::Float64
 """
-function CalculateLoss(loss, LSTM, paths_to_data::Vector{String},path_to_prox::String,run_period::Tuple{Int64,Int64})
+function CalculateLoss(loss, LSTM, paths_to_data::Vector{String},pr::ProxFct,run_period::Tuple{Int64,Int64})
     # Reset LSTM and run it until start period
     RunLSTM(LSTM, paths_to_data, run_period[1]-1)
     # Calculate loss for run_period
     data = regroupData([LoadAnnualData(run_period,path)[:,2] for path in paths_to_data]...,periodicForcing(run_period))
-    prox = [Vector{Float32}([data]) for data in LoadAnnualData(run_period,path_to_prox)[:,2]]
+    prox = pr(run_period)[1]
     loss_value = loss(data,prox,LSTM)
     println("Validation loss for years $(run_period[1])-$(run_period[2]): $loss_value")
     return loss_value

@@ -74,7 +74,7 @@ Trains a given LSTM network on training data and hyperparameters specified by th
 - Array of train losses (one loss value per epoch)
 - Array of test losses (one loss value per epoch)
 """
-function trainLSTM(path_to_prox::String,
+function trainLSTM(pr::ProxFct,
     paths_to_data::Vector{String},
     train_period::Tuple{Int64, Int64}=(1948,1980),
     test_period::Tuple{Int64, Int64}=(1981,2010);
@@ -94,8 +94,8 @@ function trainLSTM(path_to_prox::String,
     transient_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[1:Tr]
     train_data = regroupData([LoadAnnualData(train_period,path)[:,2] for path in paths_to_data]...,periodicForcing(train_period))[Tr+1:end]
     test_data = regroupData([LoadAnnualData(test_period,path)[:,2] for path in paths_to_data]...,periodicForcing(test_period))
-    prox_train = [Vector{Float32}([data]) for data in LoadAnnualData(train_period,path_to_prox)[:,2]][Tr+1:end]
-    prox_test = [Vector{Float32}([data]) for data in LoadAnnualData(test_period,path_to_prox)[:,2]]
+    prox_train = pr(train_period)[1][Tr+1:end]
+    prox_test = pr(test_period)[1]
 
     # Create model
     LSTM = SetUpLSTM(length(paths_to_data)+1,C_dim)

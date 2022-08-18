@@ -15,6 +15,7 @@ export PlotProximity
 export OnsetDayPrediction
 export CalculateLoss
 export PlotOnsetComparsion
+export ProxFct
 
 
 include("ProximityFunctions.jl")
