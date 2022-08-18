@@ -11,6 +11,11 @@ export loadLSTM
 export saveFct
 export loadFct
 export trainLSTM
+export PlotProximity
+export OnsetDayPrediction
+export CalculateLoss
+export PlotOnsetComparsion
+
 
 include("ProximityFunctions.jl")
 include("ReadInputData.jl")

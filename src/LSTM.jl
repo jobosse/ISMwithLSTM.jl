@@ -83,7 +83,7 @@ function trainLSTM(path_to_prox::String,
     epochs = 100::Int64,
     λ1 = 0.::Float64,
     λ2 = 0.::Float64,
-    learning_rate = 1e-3::Float64,
+    learning_rate = 1e-2::Float64,
     reduce_learning_rate::Int64 = 20)
 
     if train_period[2] >= test_period[1]
@@ -111,13 +111,13 @@ function trainLSTM(path_to_prox::String,
 
     train_loss = []
     test_loss = []
+    data = zip([train_data],[prox_train])
+    
     println("starting training...")
     for epoch in 1:epochs     
         # Run the model for the transient period not included in the loss function
         Flux.reset!(LSTM)
         [LSTM(x) for x in transient_data]
-
-        data = zip([train_data],[prox_train])
         Flux.train!(loss, Flux.params(LSTM), data, opt)
         if (epoch % reduce_learning_rate) == 0  # reduce the learning rate in regular steps
             opt.eta /= 2
