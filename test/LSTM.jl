@@ -13,5 +13,11 @@ using Flux
     rm("testLSTM.bson")
     data = regroupData([[1, 1, 1], [9, 9, 9]]...)
     @test typeof([LSTM2(x) for x in data]) == Vector{Vector{Float32}}
-    
+
+    pr = ProxFct("TestData/test_dTT.txt")
+    lstm, test_loss, train_loss, helper_loss = trainLSTM(pr,["TestData/test_dTT.txt"],(1948,1948),(1949,1949),Tr=2,epochs=10,reduce_learning_rate=5)
+    @test typeof([lstm(x) for x in data]) == Vector{Vector{Float32}}
+    @test length(test_loss) == 10
+    @test length(train_loss) == 10
+    @test typeof(helper_loss(data,pr(1948)[1][1:3],lstm)) == Float64
 end
