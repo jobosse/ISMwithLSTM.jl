@@ -10,11 +10,11 @@ include("ProximityFunctions.jl")
 Returns array with column: [year, data] for the annual time period given.
 
 # Arguments
-* `time_period::Tuple{Real,Real}`
-* `data_path::String`
+- `time_period::Tuple{Real,Real}`
+- `data_path::String`
 
 # Returns
-* `Matrix{Float64}`
+- `Matrix{Float64}`
 """
 function LoadAnnualData(time_period::Tuple{Real,Real}, data_path::String)
     data = readdlm(data_path)

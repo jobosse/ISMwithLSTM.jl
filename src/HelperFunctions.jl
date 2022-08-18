@@ -1,10 +1,15 @@
 """
-findallIndex(condition, x::AbstractArray)
+    function findallIndex(condition, x::AbstractVector{T} where T<:Real)
 
 Returns the indices of the values that fulfill the condition.
 
+# Arguments
+
+- `condition`: Function with boolean return
+- `x::AbstractVector{T} where T<:Real`: The condition is checked on the inputs of this vector
+
 # Returns
-* results::Vector{Int64} which contains the indices.
+- results::Vector{Int64} which contains the indices.
 """
 function findallIndex(condition, x::AbstractVector{T} where T<:Real)
        results = Int[]
@@ -21,10 +26,10 @@ end
     function FindSignSwitch(x::AbstractVector{T} where T<:Real)
 Finds the zero-crossing points in the given data. Used for the ΔTT data.
 
-#Arguments
+# Arguments
 * `x::AbstractVector{T} where T<:Real`
 
-#Returns
+# Returns
 * `vector containing indices of the zero-crossing-points`
 """    
 function FindSignSwitch(x::AbstractVector{T} where T<:Real)

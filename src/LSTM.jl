@@ -11,7 +11,7 @@ include("ProximityFunctions.jl")
 
 
 """
-    SetUpLSTM(in_size,C_size)
+    function SetUpLSTM(in_size::Int64,C_size::Int64)
 
 Sets up an LSTM neural network (for reference check out [this article](https://colah.github.io/posts/2015-08-Understanding-LSTMs/))
 where the input dimension in each recurrent step is given by `in_size` and the dimension of the cell state by `C_size`.
@@ -41,22 +41,22 @@ regroupData(data...) = [Vector{Float32}(collect(x)) for x in zip(data...)]
 
 
 """
-    function trainLSTM(path_to_prox::String,
+    function trainLSTM(pr::ProxFct,
         paths_to_data::Vector{String},
         train_period::Tuple{Int64, Int64}=(1948,1980),
         test_period::Tuple{Int64, Int64}=(1981,2010);
         C_dim::Int64 = 5,
-        Tr = 366+365::Int64,
-        epochs = 100::Int64,
-        λ1 = 0.::Float64,
-        λ2 = 0.::Float64,
-        learning_rate = 1e-3::Float64,
+        Tr::Int64 = 365+365,
+        epochs::Int64 = 100,
+        λ1::Float64 = 0.,
+        λ2::Float64 = 0.,
+        learning_rate::Float64 = 1e-2,
         reduce_learning_rate::Int64 = 20)
 
 Trains a given LSTM network on training data and hyperparameters specified by the arguments of the function
 
 # Arguments
-- `path_to_prox::String`: Path to the proximity data
+- `pr::ProxFct`: Instance of ProxFct holding the information about the proximity function
 - `paths_to_data::Vector{String}`: Array of strings describing the paths to the data which should be used for training
 - `train_period::Tuple{Int64, Int64}=(1948,1980)`: Start and end year of training
 - `test_period::Tuple{Int64, Int64}=(1981,2010)`: Start and end year of testing
@@ -70,20 +70,20 @@ Trains a given LSTM network on training data and hyperparameters specified by th
 
 # Returns
 - Trained LSTM
-- Loss function: takes arguments (data,prox,LSTM)
 - Array of train losses (one loss value per epoch)
 - Array of test losses (one loss value per epoch)
+- Loss function: takes arguments (data,prox,LSTM)
 """
 function trainLSTM(pr::ProxFct,
     paths_to_data::Vector{String},
     train_period::Tuple{Int64, Int64}=(1948,1980),
     test_period::Tuple{Int64, Int64}=(1981,2010);
     C_dim::Int64 = 5,
-    Tr = 365+365::Int64,
-    epochs = 100::Int64,
-    λ1 = 0.::Float64,
-    λ2 = 0.::Float64,
-    learning_rate = 1e-2::Float64,
+    Tr::Int64 = 365+365,
+    epochs::Int64 = 100,
+    λ1::Float64 = 0.,
+    λ2::Float64 = 0.,
+    learning_rate::Float64 = 1e-2,
     reduce_learning_rate::Int64 = 20)
 
     if train_period[2] >= test_period[1]
@@ -161,8 +161,8 @@ end
 Saves the LSTM as a '.bson' file at the given location.
 
 # Arguments
-* `LSTM, returned from trainLSTM() `
-* `path::String, e.g. "parameters/my_lstm.bson"`
+- `LSTM`: LSTM one wants to save
+- `path::String`: e.g. "parameters/my_lstm.bson"
 """
 function saveLSTM(LSTM,path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
@@ -176,7 +176,7 @@ end
 Returns the LSTM saved at the given location.
 
 # Arguments
-* `path::String, e.g. "parameters/my_lstm.bson"`
+- `path::String`: e.g. "parameters/my_lstm.bson"
 """
 function loadLSTM(path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
@@ -189,6 +189,10 @@ end
     function saveFct(loss,path::String)
 
 Saves the loss function as a '.bson' file at the given location.
+
+# Arguments
+- `loss`: loss function one wants to save
+- `path::String`: e.g. "losses/my_loss.bson"
 """
 function saveFct(fct,path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))
@@ -200,6 +204,9 @@ end
     function loadFct(path::String)
 
 Returns the Loss function saved at the given location.
+
+# Arguments
+- `path::String`: e.g. "losses/my_loss.bson"
 """
 function loadFct(path::String)
     last(path,5) == ".bson" && (path = chop(path, tail=5))

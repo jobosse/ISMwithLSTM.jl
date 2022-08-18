@@ -15,5 +15,13 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Analysis Tools" => "analysisTools.md",
+        "LSTM Tools" => "LSTMTools.md"
     ],
+
+
+)
+
+deploydocs(
+    repo = "git@github.com:jobosse/ISMwithLSTM.jl.git",
 )
