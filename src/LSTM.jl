@@ -50,7 +50,8 @@ regroupData(data...) = [Vector{Float32}(collect(x)) for x in zip(data...)]
         epochs = 100::Int64,
         λ1 = 0.::Float64,
         λ2 = 0.::Float64,
-        learning_rate = 1e-3::Float64)
+        learning_rate = 1e-3::Float64,
+        reduce_learning_rate::Int64 = 20)
 
 Trains a given LSTM network on training data and hyperparameters specified by the arguments of the function
 
@@ -65,6 +66,7 @@ Trains a given LSTM network on training data and hyperparameters specified by th
 - `λ1::Float64 = 0.`: Weight of the L1 regularisation
 - `λ2::Float64 = 0.`: Weight of the L2 regularisation
 - `learning_rate::Float64 = 1e-3`: Initial learning rate. It reduces by a factor of two every 30 epochs.
+- `reduce_learning_rate::Int64 = 20`: Reduces learing rate by a factor of two in regular steps.
 
 # Returns
 - Trained LSTM
@@ -81,7 +83,8 @@ function trainLSTM(path_to_prox::String,
     epochs = 100::Int64,
     λ1 = 0.::Float64,
     λ2 = 0.::Float64,
-    learning_rate = 1e-3::Float64)
+    learning_rate = 1e-3::Float64,
+    reduce_learning_rate::Int64 = 20)
 
     if train_period[2] >= test_period[1]
         error("Test period and train period either overlap or are in the wrong order")
@@ -116,7 +119,7 @@ function trainLSTM(path_to_prox::String,
         Flux.reset!(LSTM)
         [LSTM(x) for x in transient_data]
         Flux.train!(loss, Flux.params(LSTM), data, opt)
-        if (epoch % 30) == 0  # reduce the learning rate every 30 epochs
+        if (epoch % reduce_learning_rate) == 0  # reduce the learning rate in regular steps
             opt.eta /= 2
             println("reduced learning rate to ", opt.eta)
             println("")
