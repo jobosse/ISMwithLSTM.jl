@@ -83,28 +83,28 @@ function OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int; t_1::I
 end
 
 """
-    function PlotProximity(LSTM, paths_to_data::Vector{String}, path_to_zero_crossings::String, time_period::Tuple{Int64,Int64})
+    function PlotProximity(LSTM, pr::ProxFct ,paths_to_data::Vector{String}, time_period::Tuple{Int64,Int64})
 
 Plots the real Proximity Function vs. the learned one on the given time_period
 
 # Arguments 
-- `LSTM`
+- `LSTM`-
+- `pr::ProxFct`
 - `paths_to_data::Vector{String}`
-- `path_to_zero_crossings::String`
 - `time_period::Tuple{Int64,Int64}`
 """
-function PlotProximity(LSTM, paths_to_data::Vector{String}, path_to_zero_crossings::String, time_period::Tuple{Int64,Int64})
+function PlotProximity(LSTM,pr::ProxFct, paths_to_data::Vector{String}, time_period::Tuple{Int64,Int64})
     # Reset LSTM 
     Flux.reset!(LSTM)
     full_period = (1948,2022)
     data = regroupData([LoadAnnualData(full_period,path)[:,2] for path in paths_to_data]...,periodicForcing(full_period))
     yrs =  LoadAnnualData(full_period,paths_to_data[1])[:,1]
     lstm_values = [LSTM(x)[1] for x in data]
-    proximity_values = [LinearProximityFunction(x, path_to_zero_crossings) for x in 1:length(data)]
+    proximity_values = pr((1948,2022))[1]
     start_index = findallIndex(x-> x == Int(time_period[1]),yrs)[1]
     end_index = findallIndex(x-> x == Int(time_period[2]),yrs)[end]
-    plot(proximity_values[start_index:end_index])
-    plot!(lstm_values[start_index:end_index])
+    plot(lstm_values[start_index:end_index])
+    plot!(proximity_values[start_index:end_index])
 end
 
 """
