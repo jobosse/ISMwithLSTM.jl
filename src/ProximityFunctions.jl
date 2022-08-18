@@ -18,8 +18,7 @@ function LinearProximityFunction(x::Int, path_to_zero_crossing::String)
     try
         index_sign = Int.(readdlm(file_path))
     catch ArgumentError
-        @warn("File does not exist in the given path. You have to first create it using WriteSignSwitchesIndices \n Abort.")
-        return
+        error("File does not exist in the given path. You have to first create it using WriteSignSwitchesIndices \n Abort.")
     end
     for i in 1:(length(index_sign)-1)
         x_1 = index_sign[i]
