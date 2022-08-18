@@ -3,10 +3,18 @@ using Logging
 
 include("HelperFunctions.jl")
 
-"""
-    struct ProxFct
+struct ProxFct
+    ProxData::Matrix{Real}
+    onsets::Matrix{Real}
+end
 
-Stores relevant data for the proximity function. It is overloaded with a function returning the data of a respective intervall of years.
+
+"""
+    function ProxFct(path_to_data::String)
+
+Returns an instance of the struct ProxFct with fields filled with data according to the given path. 
+This struct stores relevant data for the proximity function. It is overloaded with a function returning 
+the data of a respective intervall of years.
 
 # Fields
 
@@ -25,18 +33,7 @@ julia> pr((2010,2020))
 0.3464912280701754, 0.3508771929824561], Real[155, 159, 152, 147, 161, 158, 161, 150, 151, 160, 156])
 ```
 """
-struct ProxFct
-    ProxData::Matrix{Real}
-    onsets::Matrix{Real}
-end
-
-
-"""
-    function ProxFct(path_to_data)
-
-Returns an instance of ProxFct with fields filled with data according to the given path
-"""
-function ProxFct(path_to_data)
+function ProxFct(path_to_data::String)
     ΔTT_data = readdlm(path_to_data)
 
     zero_crossing = []
@@ -86,15 +83,16 @@ end
 
 
 """
-function LinearProximityFunction(x::Int)
+    function LinearProximityFunction(x::Int, zero_crossing)
+
 Returns value of the linear Proximity Function proposed by [Mitsui, Boers](https://iopscience.iop.org/article/10.1088/1748-9326/ac0acb/meta)
 
 # Arguments
-* `x::Int`
-* `path_to_zero_crossing::String, path to the zero_crossings.txt file``
+- `x::Int`
+- `path_to_zero_crossing::String`: path to the zero_crossings.txt file
 
 # Returns
-* `::Float64`
+- `::Float64`
 
 """
 function LinearProximityFunction(x::Int, zero_crossing)
