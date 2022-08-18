@@ -13,13 +13,12 @@ Returns value of the linear Proximity Function proposed by [Mitsui, Boers](https
 
 """
 function LinearProximityFunction(x::Int, path_to_zero_crossing::String)
-
-    file_path = path_to_zero_crossing * "zero_crossings.txt" 
+    file_path = path_to_zero_crossing 
     index_sign = []
     try
         index_sign = Int.(readdlm(file_path))
     catch ArgumentError
-        @warn("zero_crossings.txt does not exist in the given path. You have to first create it using WriteSignSwitchesIndices \n Abort.")
+        @warn("File does not exist in the given path. You have to first create it using WriteSignSwitchesIndices \n Abort.")
         return
     end
     for i in 1:(length(index_sign)-1)

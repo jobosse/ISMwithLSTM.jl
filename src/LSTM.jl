@@ -108,13 +108,13 @@ function trainLSTM(path_to_prox::String,
 
     train_loss = []
     test_loss = []
+    data = zip([train_data],[prox_train])
+    
     println("starting training...")
     for epoch in 1:epochs     
         # Run the model for the transient period not included in the loss function
         Flux.reset!(LSTM)
         [LSTM(x) for x in transient_data]
-
-        data = zip([train_data],[prox_train])
         Flux.train!(loss, Flux.params(LSTM), data, opt)
         if (epoch % 30) == 0  # reduce the learning rate every 30 epochs
             opt.eta /= 2
@@ -142,7 +142,7 @@ function trainLSTM(path_to_prox::String,
                 println("train loss ist diverging")
                 break
             end
-            if std(train_loss[end-5:end]) < 1e-6
+            if std(train_loss[end-5:end]) < 1e-20
                 println("early stopping du to platteu in test loss")
                 break
             end
