@@ -1,6 +1,7 @@
 using Flux
 using CurveFit
 using Plots
+using Statistics
 include("LSTM.jl")
 include("ReadInputData.jl")
 include("HelperFunctions.jl")
@@ -45,7 +46,7 @@ Calculates loss over the given run_period.
 """
 function CalculateLoss(loss, LSTM, paths_to_data::Vector{String},path_to_prox::String,run_period::Tuple{Int64,Int64})
     # Reset LSTM and run it until start period
-    RunLSTM(LSTM, paths_to_data, run_period[1]-1)
+    LSTM = RunLSTM(LSTM, paths_to_data, run_period[1]-1)
     # Calculate loss for run_period
     data = regroupData([LoadAnnualData(run_period,path)[:,2] for path in paths_to_data]...,periodicForcing(run_period))
     prox = [Vector{Float32}([data]) for data in LoadAnnualData(run_period,path_to_prox)[:,2]]
@@ -67,7 +68,7 @@ end
 # Returns
 - `ISM Onset Day`
 """
-function OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int, t_1 = 60::Int, t_2 = 70::Int)
+function OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int; t_1 = 60::Int, t_2 = 70::Int)
     Flux.reset!(LSTM)
     run_period = (1948,yr)
     data = regroupData([LoadAnnualData(run_period,path)[:,2] for path in paths_to_data]...,periodicForcing(run_period))
@@ -105,13 +106,74 @@ end
 
 """
 """
-function PlotOnsetComparsion(LSTM, paths_to_data::Vector{String}, path_to_zero_crossings::String, time_period::Tuple{Int64,Int64})
-        # Reset LSTM and run it until start period
-        Flux.reset!(LSTM)
-        if time_period[1] > 1948
-            transient_period = (1948,time_period[1]-1)
-            transient_data = regroupData([LoadAnnualData(transient_period,path)[:,2] for path in paths_to_data]...,periodicForcing(transient_period))
-            [LSTM(x) for x in transient_data]
-        end
+function PlotOnsetComparsion(LSTM, paths_to_data::Vector{String}, 
+        path_to_zero_crossings::String, 
+        time_period::Tuple{Int64,Int64};
+        t_1= 60::Int, 
+        t_2=70::Int, 
+        fig_name = "OnsetComparison_$(time_period)[1]_$(time_period)[2].pdf"::String)
+
+    pred_on_set = [OnsetDayPrediction(LSTM, paths_to_data, yr,t_1,t_2) for yr in time_period]
+    ΔTT_on_set = ProxFct(time_period)[2]# @daniel lies mal hier bitte echten onsets rein für die jahre in time_period
+    x_axis = collect(time_period[1]:1:time_period[2])    
+    y_data = hcat(pred_on_set, ΔTT_on_set)
+    x_ticks = ["$i" for i in x_axis]
+    plot(y_data, 
+        label = ["Actual OD" "Predicted OD"],
+        legend=:bottomright,
+        color = [:black :orange], 
+        line = (:dot, 2), 
+        marker = ([:hex :d], 5, 0.9),
+        ylim = (130,190),
+        xticks = (1:length(x_axis), x_ticks))
+    ylabel!("Onset Date (OD)")
+    savefig(fig_name)
 end
-        #OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int, t_1 = 60::Int, t_2 = 70::Int)
+
+"""
+days between the issuing of the forecast at t2 and June 2nd (the average onset date of data)
+"""
+function PlotLeadTimeAnalysis(LSTM, 
+    paths_to_data::Vector{String}, 
+    path_to_zero_crossings::String,
+    save_directory::String; 
+    lead_time_range = (60,110),
+    time_period = (1981,2020)::Tuple{Int64,Int64})
+
+    t_2_range =  (153 .- lead_time_range)[1]:1:(153 .- lead_time_range)[end]
+    std_vec = []
+    cor_vec = []
+    ΔTT_on_set = ProxFct(time_period)[2]# @daniel lies mal hier bitte echten onsets rein für die jahre in time_period
+        #real onset dates
+
+    for t_2 in t_2_range
+        onset_days = [OnsetDayPrediction(LSTM, paths_to_data, yr,t_2=t_2) for yr in time_period]
+        push!(std_vec, std(onset_days, corrected = false))
+        push!(cor_vec, cor(onset_days,ΔTT_on_set))
+    end
+
+    x_ticks = ["$i" for i in t_2_range]
+    plot(std_vec, 
+        label = ["Prediction years. \n $(time_period[1])-$(time_period[2])"],
+        legend=:bottomright,
+        color = [:orange], 
+        line = (:dot, 2), 
+        marker = ([:hex :d], 5, 0.9),
+        xticks = (1:length(x_ticks), x_ticks))
+    ylabel!("RMSE (day)")
+    xlabel!("Average lead time (day)")
+    hline!([5.97], color=:orange, linestyle=:dash)
+    savefig(save_directory * "Std_LeadTime_$(time_period)[1]_$(time_period)[2].pdf")
+
+    plot(cor_vec, 
+    label = ["Prediction years. \n $(time_period[1])-$(time_period[2])"],
+    legend=:bottomright,
+    color = [:orange], 
+    line = (:dot, 2), 
+    marker = ([:hex :d], 5, 0.9),
+    xticks = (1:length(x_ticks), x_ticks))
+    ylabel!("Correlation")
+    xlabel!("Average lead time (day)")
+    savefig(save_directory * "Cor_LeadTime_$(time_period)[1]_$(time_period)[2].pdf")
+
+end 
