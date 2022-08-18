@@ -62,6 +62,8 @@ end
 - `LSTM`
 - `paths_to_data::Vector{String}`
 - `yr::Int`: year to predict the onset for
+
+# Keyword Arguments
 - `t_1 = 60::Int`: corresponds to the number of days before January 1st of the prediction year
 - `t_2 = 60::Int`: correpsonds to the number of days after January 1st of the prediction year
 
@@ -105,21 +107,42 @@ function PlotProximity(LSTM, paths_to_data::Vector{String}, path_to_zero_crossin
 end
 
 """
-"""
-function PlotOnsetComparsion(LSTM, paths_to_data::Vector{String}, 
-        path_to_zero_crossings::String, 
+    function PlotOnsetComparsion(LSTM, 
+        paths_to_data::Vector{String}, 
+        pr::ProxFct,
         time_period::Tuple{Int64,Int64};
         t_1= 60::Int, 
         t_2=70::Int, 
-        fig_name = "OnsetComparison_$(time_period)[1]_$(time_period)[2].pdf"::String)
+        save_directory::String)
 
-    pred_on_set = [OnsetDayPrediction(LSTM, paths_to_data, yr,t_1,t_2) for yr in time_period]
-    ΔTT_on_set = ProxFct(time_period)[2]# @daniel lies mal hier bitte echten onsets rein für die jahre in time_period
+Plots the predicted onsets vs the actual ones.
+
+# Arguments
+- `LSTM`
+- `paths_to_data::Vector{String}`
+- `pr::ProxFct`
+- `time_period::Tuple{Int64,Int64}`
+
+# Keyword Arguments
+- `t_1= 60::Int`
+- `t_2=70::Int`
+- `save_directory::String``
+"""
+function PlotOnsetComparsion(LSTM, 
+        paths_to_data::Vector{String}, 
+        pr::ProxFct,
+        time_period::Tuple{Int64,Int64};
+        t_1= 60::Int, 
+        t_2=70::Int, 
+        save_directory::String)
+
+    pred_on_set = [OnsetDayPrediction(LSTM, paths_to_data, yr;t_1=t_1,t_2=t_2) for yr in time_period[1]:time_period[2]]
+    ΔTT_on_set = pr(time_period)[2]
     x_axis = collect(time_period[1]:1:time_period[2])    
     y_data = hcat(pred_on_set, ΔTT_on_set)
     x_ticks = ["$i" for i in x_axis]
     plot(y_data, 
-        label = ["Actual OD" "Predicted OD"],
+        label = ["Predicted OD" "Actual OD"],
         legend=:bottomright,
         color = [:black :orange], 
         line = (:dot, 2), 
@@ -127,46 +150,62 @@ function PlotOnsetComparsion(LSTM, paths_to_data::Vector{String},
         ylim = (130,190),
         xticks = (1:length(x_axis), x_ticks))
     ylabel!("Onset Date (OD)")
-    savefig(fig_name)
+    savefig(save_directory * "OnsetComparison_$(time_period)[1]_$(time_period)[2].pdf")
 end
 
 """
-days between the issuing of the forecast at t2 and June 2nd (the average onset date of data)
+    function PlotLeadTimeAnalysis(LSTM, 
+        paths_to_data::Vector{String}, 
+        pr::ProxFct,
+        save_directory::String; 
+        lead_time_range = (60,110),
+        time_period = (1981,2020)::Tuple{Int64,Int64})
+
+Plots the RSME and Correlation of the onset days for the given lead-time range.
+
+# Arguments 
+- `LSTM`
+- `paths_to_data::Vector{String}`
+- `pr::ProxFct`
+- `save_directory::String`
+
+# Keyword Arguments
+- `lead_time_range = (60,110)`
+- `time_period = (1981,2020)::Tuple{Int64,Int64})`
 """
-function PlotLeadTimeAnalysis(LSTM, 
+function PlotLeadTimeAnalysis(LSTM,  #TODO: um später zu sehen in welchem lead time bereich ich besonders viele punkte brauche, lass ich mir die std_vec und cor_vec mal ausgeben.
     paths_to_data::Vector{String}, 
-    path_to_zero_crossings::String,
+    pr::ProxFct,
     save_directory::String; 
     lead_time_range = (60,110),
     time_period = (1981,2020)::Tuple{Int64,Int64})
 
-    t_2_range =  (153 .- lead_time_range)[1]:1:(153 .- lead_time_range)[end]
+    t_2_range =  (153 - lead_time_range[end]):(153 - lead_time_range[1])
     std_vec = []
     cor_vec = []
-    ΔTT_on_set = ProxFct(time_period)[2]# @daniel lies mal hier bitte echten onsets rein für die jahre in time_period
-        #real onset dates
-
+    ΔTT_on_set = pr(time_period)[2]
     for t_2 in t_2_range
-        onset_days = [OnsetDayPrediction(LSTM, paths_to_data, yr,t_2=t_2) for yr in time_period]
+        onset_days = [OnsetDayPrediction(LSTM, paths_to_data, yr,t_2=t_2) for yr in time_period[1]:time_period[2]]
         push!(std_vec, std(onset_days, corrected = false))
         push!(cor_vec, cor(onset_days,ΔTT_on_set))
     end
 
     x_ticks = ["$i" for i in t_2_range]
     plot(std_vec, 
-        label = ["Prediction years. \n $(time_period[1])-$(time_period[2])"],
+        label = "Prediction years: $(time_period[1])-$(time_period[2])",
         legend=:bottomright,
         color = [:orange], 
-        line = (:dot, 2), 
+        line = (2), 
         marker = ([:hex :d], 5, 0.9),
         xticks = (1:length(x_ticks), x_ticks))
     ylabel!("RMSE (day)")
     xlabel!("Average lead time (day)")
-    hline!([5.97], color=:orange, linestyle=:dash)
+    hline!([5.97], color=:orange, linestyle=:dash, label = "")
     savefig(save_directory * "Std_LeadTime_$(time_period)[1]_$(time_period)[2].pdf")
+    
 
     plot(cor_vec, 
-    label = ["Prediction years. \n $(time_period[1])-$(time_period[2])"],
+    label = "Prediction years. \n $(time_period[1])-$(time_period[2])",
     legend=:bottomright,
     color = [:orange], 
     line = (:dot, 2), 
@@ -175,5 +214,70 @@ function PlotLeadTimeAnalysis(LSTM,
     ylabel!("Correlation")
     xlabel!("Average lead time (day)")
     savefig(save_directory * "Cor_LeadTime_$(time_period)[1]_$(time_period)[2].pdf")
-
 end 
+
+"""
+    function PlotTrainYrsAnalysis(LSTMs, 
+        paths_to_data::Vector{String}, 
+        pr::ProxFct,
+        save_directory::String; 
+        lead_time_range = (60,110),
+        time_period = (1981,2020)::Tuple{Int64,Int64})
+
+Plots the RSME and Correlation for the different LSTMs. 
+The given LSTMs were trained on a different length of trainin years since 1981.
+
+# Arguments
+- `LSTMs`, Vector of LSTMs
+- `paths_to_data::Vector{String}``
+- `pr::ProxFct``
+- `save_directory::String` 
+
+# Keyword Arguments
+- `lead_time_range = (60,110)`
+- `time_period = (1981,2020)::Tuple{Int64,Int64})`
+
+"""
+function PlotTrainYrsAnalysis(LSTMs, 
+    paths_to_data::Vector{String}, 
+    pr::ProxFct,
+    save_directory::String; 
+    lead_time_range = (60,110),
+    time_period = (1981,2020)::Tuple{Int64,Int64})
+
+    train_year = 5:30 # hardcoded!
+    std_vec = []
+    cor_vec = []
+    ΔTT_on_set = pr(time_period)[2]
+    
+    for lstm in LSTMs
+        onset_days = [OnsetDayPrediction(lstm, paths_to_data, yr) for yr in time_period[1]:time_period[2]]
+        push!(std_vec, std(onset_days, corrected = false))
+        push!(cor_vec, cor(onset_days,ΔTT_on_set))
+    end
+
+    x_ticks = ["$i" for i in train_year]
+    plot(std_vec, 
+        label = "Prediction years: $(time_period[1])-$(time_period[2])",
+        legend=:bottomright,
+        color = [:orange], 
+        line = (2), 
+        marker = ([:hex :d], 5, 0.9),
+        xticks = (1:length(x_ticks), x_ticks))
+    ylabel!("RMSE (day)")
+    xlabel!("Length of training year (until 1981)")
+    hline!([5.97], color=:orange, linestyle=:dash, label = "")
+    savefig(save_directory * "Std_TrainYear_$(time_period)[1]_$(time_period)[2].pdf")
+
+    plot(cor_vec, 
+    label = "Prediction years. \n $(time_period[1])-$(time_period[2])",
+    legend=:bottomright,
+    color = [:orange], 
+    line = (:dot, 2), 
+    marker = ([:hex :d], 5, 0.9),
+    xticks = (1:length(x_ticks), x_ticks))
+    ylabel!("Correlation")
+    xlabel!("Length of training year (until 1981)")
+    savefig(save_directory * "Cor_TrainYear_$(time_period)[1]_$(time_period)[2].pdf")
+
+end

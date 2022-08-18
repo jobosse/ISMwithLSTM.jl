@@ -16,6 +16,8 @@ export OnsetDayPrediction
 export CalculateLoss
 export PlotOnsetComparsion
 export ProxFct
+export PlotLeadTimeAnalysis
+export PlotTrainYrsAnalysis
 
 
 include("ProximityFunctions.jl")
