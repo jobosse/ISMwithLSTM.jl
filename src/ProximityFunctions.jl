@@ -23,7 +23,7 @@ the data of a respective intervall of years.
 
 # Examples
 ```jldoctest
-julia> pr = ProxData("datafile.txt")
+julia> pr = ProxFct("datafile.txt")
 ProxFct(Real[1948.0 0.0; 1948.0 0.0; … ; 2022.0 0.0; 2022.0 0.0], Real[1948 157; 1949 151; … ; 2021 148; 2022 145])
 
 julia> pr((2010,2020))
