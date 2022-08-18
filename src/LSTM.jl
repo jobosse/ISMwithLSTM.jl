@@ -81,7 +81,7 @@ function trainLSTM(path_to_prox::String,
     epochs = 100::Int64,
     λ1 = 0.::Float64,
     λ2 = 0.::Float64,
-    learning_rate = 1e-3::Float64)
+    learning_rate = 1e-2::Float64)
 
     if train_period[2] >= test_period[1]
         error("Test period and train period either overlap or are in the wrong order")

@@ -32,7 +32,7 @@ function LinearProximityFunction(x::Int, path_to_zero_crossing::String)
             end 
         end
     end
-    return 0 # Dummy value because this correpsonds to the data after the last zero crossing. This is not used for training anyways.
+    return 0. # Dummy value because this correpsonds to the data after the last zero crossing. This is not used for training anyways.
 end
 
 

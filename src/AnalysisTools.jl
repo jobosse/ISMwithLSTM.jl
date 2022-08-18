@@ -113,5 +113,5 @@ function PlotOnsetComparsion(LSTM, paths_to_data::Vector{String}, path_to_zero_c
             transient_data = regroupData([LoadAnnualData(transient_period,path)[:,2] for path in paths_to_data]...,periodicForcing(transient_period))
             [LSTM(x) for x in transient_data]
         end
-
-        OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int, t_1 = 60::Int, t_2 = 70::Int)
+end
+        #OnsetDayPrediction(LSTM, paths_to_data::Vector{String}, yr::Int, t_1 = 60::Int, t_2 = 70::Int)
