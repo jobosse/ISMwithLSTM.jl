@@ -118,6 +118,8 @@ end
 
 Plots the predicted onsets vs the actual ones.
 
+TEST DOC
+
 # Arguments
 - `LSTM`
 - `paths_to_data::Vector{String}`
@@ -137,6 +139,7 @@ function PlotOnsetComparsion(LSTM,
         t_2=70::Int, 
         save_directory::String)
 
+    plotln("Newest Version")
     pred_on_set = [OnsetDayPrediction(LSTM, paths_to_data, yr;t_1=t_1,t_2=t_2) for yr in time_period[1]:time_period[2]]
     ΔTT_on_set = pr(time_period)[2]
     Δx_ticks = floor(Int,(time_period[2]-time_period[1])/5) # label 5 years on the x-axis
