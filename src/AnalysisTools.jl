@@ -139,7 +139,8 @@ function PlotOnsetComparsion(LSTM,
 
     pred_on_set = [OnsetDayPrediction(LSTM, paths_to_data, yr;t_1=t_1,t_2=t_2) for yr in time_period[1]:time_period[2]]
     ΔTT_on_set = pr(time_period)[2]
-    x_axis = collect(time_period[1]:1:time_period[2])    
+    Δx_ticks = floor(Int,(time_period[2]-time_period[1])/5) # label 5 years on the x-axis
+    x_axis = collect(time_period[1]:Δx_ticks:time_period[2])    
     y_data = hcat(pred_on_set, ΔTT_on_set)
     x_ticks = ["$i" for i in x_axis]
     plot(y_data, 
@@ -151,6 +152,9 @@ function PlotOnsetComparsion(LSTM,
         ylim = (130,190),
         xticks = (1:length(x_axis), x_ticks))
     ylabel!("Onset Date (OD)")
+    if !(isdir(save_directory))
+        mkdir(save_directory)
+    end
     savefig(save_directory * "OnsetComparison_$(time_period)[1]_$(time_period)[2].pdf")
 end
 
