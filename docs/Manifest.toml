@@ -474,7 +474,9 @@ version = "0.4.6"
 
 [[deps.ISMwithLSTM]]
 deps = ["BSON", "CSV", "CurveFit", "DelimitedFiles", "Flux", "Logging", "Plots", "Statistics"]
-path = ".."
+git-tree-sha1 = "56048b208e38dca3edc3b43ce78ac4b08f299c5f"
+repo-rev = "docstrings"
+repo-url = ".."
 uuid = "bfe16a19-4b52-4217-86f4-8e658ef5c094"
 version = "0.1.0"
 
