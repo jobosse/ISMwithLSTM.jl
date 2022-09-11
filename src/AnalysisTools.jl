@@ -234,22 +234,22 @@ end
 
 """
     function PlotLeadTimeAnalysis( 
-        path_to_data::Vector{String}, 
+        path_to_data::String, 
         save_directory::String; 
         lead_time_range = (60,110),
         time_period = (1981,2020)::Tuple{Int64,Int64})
 
-    Plots the RSME and Correlation of the onset days for the given lead-time range.
-    Takes in data from the function WriteOutLeadTimeAnalysis
+Plots the RSME and Correlation of the onset days for the given lead-time range.
+Takes in data from the function WriteOutLeadTimeAnalysis
 
-    # Arguments 
-    - `path_to_data::String`
-    - `save_directory::String`
+# Arguments 
+- `path_to_data::String`
+- `save_directory::String`
 
-    # Keyword Arguments
-    - `lead_time_range = (60,110)`
-    - `time_period = (1981,2020)::Tuple{Int64,Int64})`
-    """
+# Keyword Arguments
+- `lead_time_range = (60,110)`
+- `time_period = (1981,2020)::Tuple{Int64,Int64})`
+"""
 function PlotLeadTimeAnalysis( 
     path_to_data::String, 
     save_directory::String; 
