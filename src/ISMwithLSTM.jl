@@ -16,6 +16,7 @@ export OnsetDayPrediction
 export CalculateLoss
 export PlotOnsetComparsion
 export ProxFct
+export WriteOutLeadTimeAnalysis
 export PlotLeadTimeAnalysis
 export PlotTrainYrsAnalysis
 
