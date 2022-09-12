@@ -103,8 +103,11 @@ function PlotProximity(LSTM,pr::ProxFct, paths_to_data::Vector{String}, time_per
     proximity_values = pr((1948,2022))[1]
     start_index = findallIndex(x-> x == Int(time_period[1]),yrs)[1]
     end_index = findallIndex(x-> x == Int(time_period[2]),yrs)[end]
-    plot(lstm_values[start_index:end_index])
-    plot!(proximity_values[start_index:end_index])
+    plot(lstm_values[start_index:end_index],label="approximated")
+    plot!(proximity_values[start_index:end_index],label="exact")
+    xaxis!("days")
+    yaxis!("proximity")
+    savefig("../prox_fct.pdf")
 end
 
 """
