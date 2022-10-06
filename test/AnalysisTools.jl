@@ -11,8 +11,5 @@ using Flux
     pr = ProxFct("TestData/test_dTT.txt")
     @test typeof(CalculateLoss(loss, lstm, ["TestData/test_dTT.txt"],pr::ProxFct,(1948,1949))) == Float64
     @test typeof(OnsetDayPrediction(lstm, ["TestData/test_dTT.txt"], 1949)) == Float32
-    #test_lstm = loadLSTM("TestData/test_lstm.bson")
-    #test_data_path = "TestData/deltaTT.txt"
-    #@test RunLSTM(test_lstm, [test_data_path],(1948,1949))[end,2] ≈ 0.318445 atol=0.0001
     
 end
