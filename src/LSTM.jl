@@ -19,7 +19,7 @@ The dimension of the state which the acticle calls 'h' is the same as the dimens
 computed by a single dense layer mapping 'h' to a scalar value (i.e. the estimate for the proximity function at the given time).
 """
 function SetUpLSTM(in_size::Int64,C_size::Int64)
-    return Chain(RNN(in_size => C_size), Dense(C_size => 1))
+    return Chain(LSTM(in_size => C_size), Dense(C_size => 1))
 end
 
 
@@ -78,7 +78,7 @@ function trainLSTM(pr::ProxFct,
     paths_to_data::Vector{String},
     train_period::Tuple{Int64, Int64}=(1948,1980),
     test_period::Tuple{Int64, Int64}=(1981,2010);
-    C_dim::Int64 = 5,
+    C_dim::Int64 = 50,
     Tr::Int64 = 365+365,
     epochs::Int64 = 100,
     λ1::Float64 = 0.,
@@ -145,7 +145,7 @@ function trainLSTM(pr::ProxFct,
                 println("train loss ist diverging")
                 break
             end
-            if std(train_loss[end-5:end]) < 1e-20
+            if std(train_loss[end-5:end]) < 1e-6
                 println("early stopping du to platteu in test loss")
                 break
             end

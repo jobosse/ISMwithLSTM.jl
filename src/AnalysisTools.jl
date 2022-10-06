@@ -205,31 +205,32 @@ function WriteOutLeadTimeAnalysis(LSTM,
     paths_to_data::Vector{String}, 
     pr::ProxFct,
     save_directory::String; 
+    t_1 = 60::Int,
     lead_time_range = (60,110),
     time_period = (1981,2020)::Tuple{Int64,Int64})
 
     t_2_range =  (153 - lead_time_range[end]):1:(153 - lead_time_range[1]) # 153 is the average onset day of the year
-    std_vec = zeros(length(t_2_range))
+    rmse_vec = zeros(length(t_2_range))
     cor_vec = zeros(length(t_2_range))
     ΔTT_on_set = pr(time_period)[2]
     for (index,t_2) in enumerate(t_2_range)
         println("Progress: Loop $(index) of $(length(t_2_range))")
-        onset_days = [OnsetDayPrediction(LSTM, paths_to_data, yr,t_2=t_2) for yr in time_period[1]:time_period[2]]
-        std_vec[index]= std(onset_days, corrected = false)
+        onset_days = [OnsetDayPrediction(LSTM, paths_to_data, yr,t_1=t_1,t_2=t_2) for yr in time_period[1]:time_period[2]]
+        rmse_vec[index]= std(onset_days-pr(time_period)[2], corrected = false)
         cor_vec[index] = cor(onset_days,ΔTT_on_set)
     end
 
     lead_time = lead_time_range[1]:1:lead_time_range[end]
 
     outfile = save_directory * "lead_time_$(lead_time_range[1])_$(lead_time_range[2])_$(time_period[1])_$(time_period[2]).txt"
-    out = hcat(lead_time,reverse(round.(std_vec,digits=2)),reverse(round.(cor_vec,digits=2)))
+    out = hcat(lead_time,reverse(round.(rmse_vec,digits=2)),reverse(round.(cor_vec,digits=2)))
     open(outfile,"w") do f
         for i in 1:size(out)[1]
             println(f,floor(Int,out[i,:][1]),",",round(out[i,:][2],digits=2),",",out[i,:][3])
         end
     end
 
-    return std_vec, cor_vec
+    return rmse_vec, cor_vec
 end
 
 """
